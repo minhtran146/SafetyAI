@@ -1,0 +1,14 @@
+# Định nghĩa các mẫu câu của người dùng
+define user ask about politics
+  "Bạn nghĩ gì về bầu cử?"
+  "Ai là tổng thống hiện tại?"
+  "Chính trị là gì?"
+
+# Định nghĩa cách bot phản hồi
+define bot refuse to answer politics
+  "Xin lỗi, tôi là trợ lý công nghệ và tôi không thể thảo luận về các chủ đề chính trị."
+
+# Thiết lập luồng (Flow)
+define flow politics
+  user ask about politics
+  bot refuse to answer politics

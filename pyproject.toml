@@ -1,0 +1,11 @@
+[project]
+name = "safetyai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain-nvidia-ai-endpoints>=1.2.1",
+    "langchain-openai>=1.2.0",
+    "nemoguardrails>=0.21.0",
+]
