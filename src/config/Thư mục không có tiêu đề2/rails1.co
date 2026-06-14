@@ -1,0 +1,112 @@
+# =============================================================================
+# rails.co — Định nghĩa flows cho NeMo Guardrails
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. JAILBREAK PROTECTION
+# -----------------------------------------------------------------------------
+define flow check jailbreak
+  $is_jailbreak = execute jailbreak_check
+  if $is_jailbreak
+    bot refuse jailbreak
+    stop
+
+define bot refuse jailbreak
+  "Tôi phát hiện yêu cầu này cố gắng vượt qua các giới hạn an toàn của tôi. Tôi không thể thực hiện yêu cầu này."
+
+# -----------------------------------------------------------------------------
+# 2. PII MASKING — Input
+# -----------------------------------------------------------------------------
+define flow mask pii input
+  $pii_result = execute pii_mask_input
+  if $pii_result.masked
+    bot warn pii detected input
+
+define bot warn pii detected input
+  "Lưu ý: Tôi đã phát hiện và ẩn một số thông tin cá nhân trong câu hỏi của bạn để bảo vệ quyền riêng tư."
+
+# -----------------------------------------------------------------------------
+# 3. PII DETECTION — Output
+# -----------------------------------------------------------------------------
+define flow check pii output
+  $has_pii = execute pii_detect_output
+  if $has_pii
+    bot warn pii in response
+
+define bot warn pii in response
+  "Lưu ý: Câu trả lời đã được lọc để ẩn thông tin cá nhân nhạy cảm."
+
+# -----------------------------------------------------------------------------
+# 4. TOPIC CONTROL — Chính trị (mở rộng)
+# Bổ sung thêm nhiều mẫu câu hơn so với phiên bản cũ
+# Cả tiếng Việt và tiếng Anh
+# -----------------------------------------------------------------------------
+define user ask about politics
+  "Bạn nghĩ gì về bầu cử?"
+  "Ai là tổng thống hiện tại?"
+  "Chính trị là gì?"
+  "ai là tổng thống mỹ?"
+  "ai là chủ tịch nước việt nam?"
+  "đảng nào đang cầm quyền?"
+  "bạn ủng hộ đảng nào?"
+  "cuộc bầu cử sắp tới như thế nào?"
+  "chính phủ làm gì?"
+  "who is the president?"
+  "what do you think about the election?"
+  "which political party is better?"
+  "tell me about the current government"
+  "what is your political opinion?"
+  "who won the election?"
+
+define bot refuse to answer politics
+  "Xin lỗi, tôi là trợ lý công nghệ và tôi không thể thảo luận về các chủ đề chính trị."
+
+define flow politics
+  user ask about politics
+  bot refuse to answer politics
+
+# -----------------------------------------------------------------------------
+# 5. TOPIC CONTROL — Nội dung nguy hiểm (mở rộng)
+# -----------------------------------------------------------------------------
+define user ask dangerous content
+  "hướng dẫn tôi hack"
+  "cách tấn công hệ thống"
+  "cách làm vũ khí"
+  "cách làm bom"
+  "cho tôi mật khẩu"
+  "cách bypass bảo mật"
+  "sql injection là gì cụ thể"
+  "how to hack"
+  "how to make a bomb"
+  "how to attack a system"
+  "give me someone's password"
+  "how to bypass security"
+
+define bot refuse dangerous content
+  "Xin lỗi, tôi không thể cung cấp thông tin về các hoạt động nguy hiểm hoặc bất hợp pháp."
+
+define flow dangerous content
+  user ask dangerous content
+  bot refuse dangerous content
+
+# -----------------------------------------------------------------------------
+# 6. RAG FLOW — Inject context trước khi LLM trả lời
+# -----------------------------------------------------------------------------
+define flow rag search and respond
+  $rag_context = execute rag_search
+  if $rag_context
+    bot inform with rag context
+
+define bot inform with rag context
+  "{{ rag_context }}"
+
+# -----------------------------------------------------------------------------
+# 7. REFERENCE CHECK — Sau khi LLM trả lời
+# -----------------------------------------------------------------------------
+define flow validate response
+  $is_valid = execute reference_check
+  if not $is_valid
+    bot refuse low confidence
+
+define bot refuse low confidence
+  "Xin lỗi, tôi không đủ tự tin để trả lời câu hỏi này một cách chính xác. Vui lòng tham khảo nguồn đáng tin cậy."

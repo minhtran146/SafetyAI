@@ -1,0 +1,27 @@
+models:
+  - type: main
+    engine: openai
+    model: llama-3.3-70b-versatile
+    parameters:
+      base_url: "https://api.groq.com/openai/v1"
+      api_key: "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"
+
+  - type: content_safety
+    engine: openai
+    model: llama-3.3-70b-versatile
+    parameters:
+      base_url: "https://api.groq.com/openai/v1"
+      api_key: "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"
+
+instructions:
+  - type: general
+    content: |
+      You are a helpful AI assistant. Answer questions clearly and concisely.
+
+rails:
+  input:
+    flows:
+      - content safety check input $model=content_safety
+  output:
+    flows:
+      - content safety check output $model=content_safety

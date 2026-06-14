@@ -1,19 +1,48 @@
 models:
+  # ---------------------------------------------------------------------------
+  # Model chính — Groq (nhanh, miễn phí)
+  # ---------------------------------------------------------------------------
   - type: main
     engine: openai
     model: llama-3.3-70b-versatile
     parameters:
       base_url: "https://api.groq.com/openai/v1"
+      api_key: "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"
 
+  # ---------------------------------------------------------------------------
+  # Content Safety — Nemotron Safety Guard NIM
+  # Train chuyên biệt cho safety, không cần viết prompt thủ công
+  # Lấy NVIDIA_API_KEY miễn phí tại: https://build.nvidia.com
+  # ---------------------------------------------------------------------------
   - type: content_safety
-    engine: openai
-    model: llama-3.3-70b-versatile
+    engine: nim
+    model: nvidia/llama-3.1-nemotron-safety-guard-8b-v3
     parameters:
-      base_url: "https://api.groq.com/openai/v1"
+      base_url: "https://integrate.api.nvidia.com/v1"
+      api_key: "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"
+
+instructions:
+  - type: general
+    content: |
+      You are a helpful AI assistant. Answer questions clearly and concisely.
+      When relevant context from the knowledge base is provided, use it to give
+      more accurate and grounded answers. Always be honest and helpful.
+
 rails:
   input:
     flows:
+      # Content safety — Nemotron Safety Guard (thay toàn bộ jailbreak + safety thủ công)
       - content safety check input $model=content_safety
+      # PII masking — Presidio built-in
+      # Cài: pip install presidio-analyzer presidio-anonymizer
+      #       python -m spacy download en_core_web_lg
+      - mask sensitive data on input
+
   output:
     flows:
+      # Content safety output
       - content safety check output $model=content_safety
+      # PII trong response
+      - mask sensitive data on output
+      # Fact-check
+      - self check facts

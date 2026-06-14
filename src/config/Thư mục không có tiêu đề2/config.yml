@@ -1,0 +1,40 @@
+models:
+  - type: main
+    engine: openai
+    model: llama-3.3-70b-versatile
+    parameters:
+      base_url: "https://api.groq.com/openai/v1"
+      api_key: "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"
+
+  - type: content_safety
+    engine: openai
+    model: llama-3.3-70b-versatile
+    parameters:
+      base_url: "https://api.groq.com/openai/v1"
+      api_key: "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"
+
+instructions:
+  - type: general
+    content: |
+      You are a helpful AI assistant. Answer questions clearly and concisely.
+      When relevant context from the knowledge base is provided, use it to give
+      more accurate and grounded answers. Always be honest and helpful.
+
+rails:
+  input:
+    flows:
+      # 1. Jailbreak detection — chạy đầu tiên
+      - check jailbreak
+      # 2. PII masking — mask PII trước khi vào LLM
+      - mask pii input
+      # 3. Content safety check (LLM-based, 23 categories)
+      - content safety check input $model=content_safety
+
+  output:
+    flows:
+      # 4. Content safety check output
+      - content safety check output $model=content_safety
+      # 5. PII detection trong response
+      - check pii output
+      # 6. Reference check — đảm bảo câu trả lời có căn cứ
+      - validate response
