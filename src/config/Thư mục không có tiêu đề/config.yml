@@ -4,14 +4,14 @@ models:
     model: llama-3.3-70b-versatile
     parameters:
       base_url: "https://api.groq.com/openai/v1"
-      api_key: "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"
+      api_key: "${GROQ_API_KEY}"
 
   - type: content_safety
     engine: openai
     model: llama-3.3-70b-versatile
     parameters:
       base_url: "https://api.groq.com/openai/v1"
-      api_key: "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"
+      api_key: "${GROQ_API_KEY}"
 
 instructions:
   - type: general
